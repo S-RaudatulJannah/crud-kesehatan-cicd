@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Data Pasien</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 p-8 font-sans">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-blue-800 mb-6 border-b pb-2">Sistem Manajemen Data Pasien</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4" id="formTitle">Tambah Pasien Baru</h2>
+            <form id="pasienForm" class="space-y-4">
+                <input type="hidden" id="pasienId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="nama" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Umur</label>
+                    <input type="number" id="umur" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Diagnosa</label>
+                    <input type="text" id="diagnosa" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <button type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Simpan Data</button>
+                <button type="button" onclick="resetForm()"
+                    class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition ml-2 hidden"
+                    id="btnBatal">Batal</button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umur
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Diagnosa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPasien" class="bg-white divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Logika CRUD menggunakan LocalStorage
+        let dataPasien = JSON.parse(localStorage.getItem('pasienData')) || [];
+
+        function simpanKeLocalStorage() {
+            localStorage.setItem('pasienData', JSON.stringify(dataPasien));
+            renderTabel();
+        }
+
+        function renderTabel() {
+            const tbody = document.getElementById('tabelPasien');
+            tbody.innerHTML = '';
+            dataPasien.forEach((pasien, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${pasien.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${pasien.umur} Tahun</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${pasien.diagnosa}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="editPasien(${index})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="hapusPasien(${index})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('pasienForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('pasienId').value;
+            const pasienBaru = {
+                nama: document.getElementById('nama').value,
+                umur: document.getElementById('umur').value,
+                diagnosa: document.getElementById('diagnosa').value
+            };
+
+            if (id === '') {
+                dataPasien.push(pasienBaru); // Create
+            } else {
+                dataPasien[id] = pasienBaru; // Update
+            }
+
+            simpanKeLocalStorage();
+            resetForm();
+        });
+
+        function editPasien(index) {
+            const pasien = dataPasien[index];
+            document.getElementById('pasienId').value = index;
+            document.getElementById('nama').value = pasien.nama;
+            document.getElementById('umur').value = pasien.umur;
+            document.getElementById('diagnosa').value = pasien.diagnosa;
+            document.getElementById('formTitle').innerText = 'Edit Data Pasien';
+            document.getElementById('btnBatal').classList.remove('hidden');
+        }
+
+        function hapusPasien(index) {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                dataPasien.splice(index, 1); // Delete
+                simpanKeLocalStorage();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('pasienForm').reset();
+            document.getElementById('pasienId').value = '';
+            document.getElementById('formTitle').innerText = 'Tambah Pasien Baru';
+            document.getElementById('btnBatal').classList.add('hidden');
+        }
+
+        // Render awal
+        renderTabel();
+    </script>
+</body>
+
+</html>
